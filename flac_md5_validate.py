@@ -64,18 +64,25 @@ def check_for_flac():
     return(os.path.isfile("/usr/local/bin/flac"))
 
 def burn_to_disc():
-    discs=set()
+    discs = set()
     for line in file[0].splitlines():
-        discs.update(line[:-8][-1])
-    print("You will need {0} blank CD-R discs.".format(max(discs)))
+        discs.add((line.split()[1].replace('*',''))[:-8])
+    print("-" * 50 + "\nYou will need {0} blank CD-R discs.".format(max(discs)[-1]))
     while True:
         confirm = input("Enter 'c' to continue, or 'q' to quit: ")
         if confirm.lower() == 'q':
             exit(0)
         elif confirm.lower() == 'c':
+            input("-" * 50 + "\nInsert the first disc, then hit 'c' to continue...")
             for disc in sorted(discs):
-                print(disc)
-            exit(0)
+                print("Complete. Label the ejected disc as {0}".format(disc))
+                if disc[-1] < max(discs)[-1]:
+                    while True:
+                        input("-" * 50 + "\nInsert the next disc, then hit 'c' to continue...")
+                        break
+                else:
+                    print("-" * 50 + "\nFinished!\n" + "-" * 50)
+                    exit(0)
 
 
 if __name__ == '__main__':
