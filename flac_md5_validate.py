@@ -78,10 +78,10 @@ def burn_to_disc():
                 print("Complete. Label the ejected disc as {0}".format(disc))
                 if disc[-1] < max(discs)[-1]:
                     while True:
-                        input("-" * 50 + "\nInsert the next disc, then hit 'c' to continue...")
+                        confirm = input("-" * 50 + "\nInsert the next disc then hit 'c' to continue.\n(Or 's' to skip this disc. ")
                         break
                 else:
-                    print("-" * 50 + "\nFinished!\n" + "-" * 50)
+                    print("-" * 50 + "\nFinished!\n" + "-" * 50 )
                     exit(0)
 
 
