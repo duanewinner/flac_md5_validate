@@ -86,6 +86,7 @@ def burn_to_disc():
                         for flac in glob.glob(os.path.dirname(sys.argv[1]) + '/' + disc + 't??.flac'):
                             wav = os.path.basename(flac)[:-4] + "wav"
                             os.system("flac -d " + flac + " -o " + tmpdir + "/" + wav)
+                        os.system("cdrecord -eject -audio " + tmpdir + "/*.wav")
                         print("Complete. Label the ejected disc as '{0} {1}/{2}'".format(disc[:-2].upper(), disc[-1:], max(discs)[-1]))
                         break
             print("-" * 50 + "\nFinished!\n" + "-" * 50 )
