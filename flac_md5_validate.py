@@ -1,9 +1,11 @@
 #!/usr/local/bin/python3
 
+import glob
 import hashlib
 import mimetypes
 import os
 import sys
+import tempfile
 from collections import OrderedDict
 
 def read_textfile_as_param():
@@ -60,29 +62,34 @@ def validate_manifest(manifest_file, manifest_directory):
     else:
         return(("-" * 50 + "\n" + "Errors found!\n" + "-" * 50), 1)
 
-def check_for_flac():
-    return(os.path.isfile("/usr/local/bin/flac"))
+def check_for_flac_and_cdrecord():
+    return(os.path.isfile("/usr/local/bin/flac") and \
+        os.path.isfile("/usr/local/bin/cdrecord"))
 
 def burn_to_disc():
     discs = set()
     for line in file[0].splitlines():
         discs.add((line.split()[1].replace('*',''))[:-8])
-    print("-" * 50 + "\nYou will need {0} blank CD-R discs.".format(max(discs)[-1]))
+    print("-" * 50 + "\nYou will need {0} blank CD-R discs. \n".format(max(discs)[-1]) + "-" * 50)
     while True:
         confirm = input("Enter 'c' to continue, or 'q' to quit: ")
         if confirm.lower() == 'q':
             exit(0)
         elif confirm.lower() == 'c':
-            input("-" * 50 + "\nInsert the first disc, then hit 'c' to continue...")
             for disc in sorted(discs):
-                print("Complete. Label the ejected disc as {0}".format(disc))
-                if disc[-1] < max(discs)[-1]:
-                    while True:
-                        confirm = input("-" * 50 + "\nInsert the next disc then hit 'c' to continue.\n(Or 's' to skip this disc. ")
+                while True:
+                    confirm  = input("-" * 50 + "\nInsert disc {0}, then hit 'c' to continue, or 's' to skip to the next disk... ".format(disc[-1]))
+                    if confirm == 's':
                         break
-                else:
-                    print("-" * 50 + "\nFinished!\n" + "-" * 50 )
-                    exit(0)
+                    elif confirm == 'c':
+                        tmpdir = tempfile.mkdtemp()
+                        for flac in glob.glob(os.path.dirname(sys.argv[1]) + '/' + disc + 't??.flac'):
+                            wav = os.path.basename(flac)[:-4] + "wav"
+                            os.system("flac -d " + flac + " -o " + tmpdir + "/" + wav)
+                        print("Complete. Label the ejected disc as '{0} {1}/{2}'".format(disc[:-2].upper(), disc[-1:], max(discs)[-1]))
+                        break
+            print("-" * 50 + "\nFinished!\n" + "-" * 50 )
+            exit(0)
 
 
 if __name__ == '__main__':
@@ -93,8 +100,8 @@ if __name__ == '__main__':
     if validation_results[1] == 1:
         exit(1)
     else:
-        if check_for_flac():
-            print("\"flac\" appears to be installed.")
+        if check_for_flac_and_cdrecord():
+            print("\"flac\" appears to be installed, and \n\"cdrecord\" appears to be installed \n" + "-" * 50)
             while True:
                 burn_confim = input("Would you like to burn now with flac and drutil? (y/n): ")
                 if burn_confim.lower() == 'n':
@@ -102,5 +109,9 @@ if __name__ == '__main__':
                 elif burn_confim.lower() == 'y':
                     burn_to_disc()
                     exit(0)
+        else:
+            print("This program can also burn, but you will need to install \n\"flac\" and \"cdrecord\" using \"brew\". \nSee: http://brew.sh")
+            exit(0)
+
 
 
